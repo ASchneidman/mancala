@@ -1,7 +1,9 @@
+#[derive(PartialEq, Clone)]
 pub enum Player {
     First,
     Second,
 }
+
 pub struct Pocket {
     pub name: String,
     pub seeds: usize,
@@ -45,6 +47,45 @@ impl Board {
         }
         print!("  |\n");
         println!("    A  B  C  D  E  F")
+    }
+
+    pub fn play(&mut self, position: char) -> bool {
+        let mut pockets: Vec<&mut Pocket> = vec![];
+        pockets.push(&mut self.second_player_store);
+        for pocket in self.first_player_pockets.iter_mut() {
+            pockets.push(pocket);
+        }
+        pockets.push(&mut self.first_player_store);
+        for pocket in self.second_player_pockets.iter_mut() {
+            pockets.push(pocket);
+        }
+
+        let mut index;
+        if (position as usize >= 'A' as usize) && (position as usize <= 'F' as usize) {
+            index = 1 + (position as usize - 'A' as usize);
+        } else {
+            index = 8 + (position as usize - 'a' as usize);
+        }
+
+        let player = pockets[index].player.clone();
+        if pockets[index].seeds == 0 {
+            return false;
+        }
+        let seeds = pockets[index].seeds;
+        pockets[index].seeds = 0;
+
+        let mut seeds_given_out = 0;
+        while seeds_given_out < seeds {
+            index = (index + 1) % pockets.len();
+            // skip enemy store
+            if pockets[index].name == "Store" && pockets[index].player != player {
+                continue;
+            }
+            pockets[index].seeds += 1;
+            seeds_given_out += 1;
+        }
+
+        return true;
     }
 }
 
