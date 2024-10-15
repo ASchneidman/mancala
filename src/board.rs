@@ -1,4 +1,4 @@
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum Player {
     First,
     Second,
@@ -125,4 +125,25 @@ pub fn new_board() -> Board {
     return Board {
         pockets: pockets.try_into().unwrap_or_else(|_v| panic!())
     };
+}
+
+pub struct GameState {
+    pub board: Board,
+    pub player: Player,
+}
+
+pub fn new_game() -> GameState {
+    return GameState {
+        board: new_board(),
+        player: Player::First,
+    }
+}
+
+impl GameState {
+    pub fn valid_move(&self, position: char) -> bool {
+        if self.player == Player::First {
+            return (position as usize >= 'A' as usize) && (position as usize <= 'F' as usize);
+        }
+        return (position as usize >= 'a' as usize) && (position as usize <= 'f' as usize);
+    }
 }

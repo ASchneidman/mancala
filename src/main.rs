@@ -1,22 +1,35 @@
+use std::io::stdin;
+
 mod board;
 
-fn main() {
-    let mut board = board::new_board();
-    board.print();
-    board.play('a');
-    board.print();
-    board.play('b');
-    board.print();
-    board.play('c');
-    board.print();
-    board.play('d');
-    board.print();
-    board.play('e');
-    board.print();
-    board.play('f');
-    board.print();
+fn read_input(game: &mut board::GameState) -> bool {
+    let mut input: String = String::new();
+    match stdin().read_line(&mut input).ok() {
+        None => return false,
+        Some(_) => {
+            match input.chars().next() {
+                None => return false,
+                Some(pos) => {
+                    if !game.valid_move(pos) {
+                        return false;
+                    }
+                    game.board.play(pos);
+                }
+            }
+        }
+    }
+    return true;
+}
 
-    board.pockets[8].seeds = 0;
-    board.print();
-    println!("{}", board.is_game_over());
+fn main() {
+    let mut game = board::new_game();
+
+    while !game.board.is_game_over() {
+        println!("Player {:#?}", game.player);
+        game.board.print();
+        if read_input(&mut game) {
+            game.player = if game.player == board::Player::First { board::Player::Second } else { board::Player::First };
+        }
+    }
+    game.board.print();
 }
