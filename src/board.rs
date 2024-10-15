@@ -11,10 +11,7 @@ pub struct Pocket {
 }
 
 pub struct Board {
-    pub first_player_pockets: [Pocket; 6],
-    pub first_player_store: Pocket,
-    pub second_player_pockets: [Pocket; 6],
-    pub second_player_store: Pocket,
+    pub pockets: [Pocket; 14],
 }
 
 impl Board {
@@ -30,36 +27,26 @@ impl Board {
         }
 
         print!("|  |");
-        for pocket in self.second_player_pockets.iter().rev() {
-            print_seed(pocket.seeds);
+        for pocket_index in 1..7 {
+            print_seed(self.pockets[pocket_index].seeds);
         }
         print!("  |\n");
 
         print!("|");
-        print_seed(self.second_player_store.seeds);
+        print_seed(self.pockets[0].seeds);
         print!("-----------------|");
-        print_seed(self.first_player_store.seeds);
+        print_seed(self.pockets[7].seeds);
         print!("\n");
         
         print!("|  |");
-        for pocket in self.first_player_pockets.iter() {
-            print_seed(pocket.seeds);
+        for pocket_index in 8..14 {
+            print_seed(self.pockets[pocket_index].seeds);
         }
         print!("  |\n");
         println!("    A  B  C  D  E  F")
     }
 
     pub fn play(&mut self, position: char) -> bool {
-        let mut pockets: Vec<&mut Pocket> = vec![];
-        pockets.push(&mut self.second_player_store);
-        for pocket in self.first_player_pockets.iter_mut() {
-            pockets.push(pocket);
-        }
-        pockets.push(&mut self.first_player_store);
-        for pocket in self.second_player_pockets.iter_mut() {
-            pockets.push(pocket);
-        }
-
         let mut index;
         if (position as usize >= 'A' as usize) && (position as usize <= 'F' as usize) {
             index = 1 + (position as usize - 'A' as usize);
@@ -67,21 +54,21 @@ impl Board {
             index = 8 + (position as usize - 'a' as usize);
         }
 
-        let player = pockets[index].player.clone();
-        if pockets[index].seeds == 0 {
+        let player = self.pockets[index].player.clone();
+        if self.pockets[index].seeds == 0 {
             return false;
         }
-        let seeds = pockets[index].seeds;
-        pockets[index].seeds = 0;
+        let seeds = self.pockets[index].seeds;
+        self.pockets[index].seeds = 0;
 
         let mut seeds_given_out = 0;
         while seeds_given_out < seeds {
-            index = (index + 1) % pockets.len();
+            index = (index + 1) % self.pockets.len();
             // skip enemy store
-            if pockets[index].name == "Store" && pockets[index].player != player {
+            if self.pockets[index].name == "Store" && self.pockets[index].player != player {
                 continue;
             }
-            pockets[index].seeds += 1;
+            self.pockets[index].seeds += 1;
             seeds_given_out += 1;
         }
 
@@ -90,19 +77,27 @@ impl Board {
 }
 
 pub fn new_board() -> Board {
-    let mut first_player_pockets: Vec<Pocket> = vec![];
-    let mut second_player_pockets: Vec<Pocket> = vec![];
-    for name in ["A", "B", "C", "D", "E", "F"] {
-        first_player_pockets.push(Pocket {
-            name: name.into(),
+    let mut pockets: Vec<Pocket> = vec![];
+    pockets.push(Pocket {
+        name: "Store".into(),
+        seeds: 0,
+        player: Player::Second,
+    });
+    for pocket in ["A", "B", "C", "D", "E", "F"] {
+        pockets.push(Pocket {
+            name: pocket.into(),
             seeds: 4,
             player: Player::First,
         });
     }
-
-    for name in ["a", "b", "c", "d", "e", "f"] {
-        second_player_pockets.push(Pocket {
-            name: name.into(),
+    pockets.push(Pocket {
+        name: "Store".into(),
+        seeds: 0,
+        player: Player::First,
+    });
+    for pocket in ["a", "b", "c", "d", "e", "f"] {
+        pockets.push(Pocket {
+            name: pocket.into(),
             seeds: 4,
             player: Player::Second,
         });
@@ -110,17 +105,6 @@ pub fn new_board() -> Board {
 
 
     return Board {
-        first_player_pockets: first_player_pockets.try_into().unwrap_or_else(|_v| panic!()),
-        first_player_store: Pocket {
-            name: "Store".into(),
-            seeds: 0,
-            player: Player::First,
-        },
-        second_player_pockets: second_player_pockets.try_into().unwrap_or_else(|_v| panic!()),
-        second_player_store: Pocket {
-            name: "Store".into(),
-            seeds: 0,
-            player: Player::Second,
-        },
+        pockets: pockets.try_into().unwrap_or_else(|_v| panic!())
     };
 }
