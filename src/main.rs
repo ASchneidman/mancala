@@ -15,4 +15,8 @@ fn main() {
     board.print();
     board.play('f');
     board.print();
+
+    board.pockets[8].seeds = 0;
+    board.print();
+    println!("{}", board.is_game_over());
 }
