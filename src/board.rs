@@ -168,3 +168,64 @@ impl GameState {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_move_correct_player() {
+        let mut game = new_game();
+        assert_eq!(game.player, Player::First);
+        assert_eq!(game.board.pockets[1].seeds, 4);
+        game.play('A');
+        assert_eq!(game.board.pockets[1].seeds, 0);
+
+        assert_eq!(game.player, Player::Second);
+        game.play('a');
+        assert_eq!(game.board.pockets[8].seeds, 0);
+        assert_eq!(game.player, Player::First);
+    }
+
+    #[test]
+    fn test_player_gets_another_turn_if_landed_on_store() {
+        let mut game = new_game();
+        game.play('C');
+        assert_eq!(game.player, Player::First);
+    }
+
+    #[test]
+    fn test_game_over() {
+        let mut game = new_game();
+        assert!(!game.board.is_game_over());
+        for i in 1..7 {
+            game.board.pockets[i].seeds = 0;
+        }
+        assert!(game.board.is_game_over());
+    }
+
+    #[test]
+    fn test_dont_populate_enemy_store() {
+        let mut game = new_game();
+        game.board.pockets[6].seeds = 8;
+        game.play('F');
+        assert_eq!(game.board.pockets[7].seeds, 1);
+        // Should wrap around past enemy pocket
+        assert_eq!(game.board.pockets[0].seeds, 0);
+        assert_eq!(game.board.pockets[1].seeds, 5);
+        for i in 8..14 {
+            assert_eq!(game.board.pockets[i].seeds, 5);
+        }
+    }
+
+    #[test]
+    fn test_capture_enemy_pocket() {
+        let mut game = new_game();
+        game.board.pockets[6].seeds = 0;
+        game.play('B');
+        assert_eq!(game.player, Player::Second);
+        assert_eq!(game.board.pockets[6].seeds, 0);
+        assert_eq!(game.board.pockets[8].seeds, 0);
+        assert_eq!(game.board.pockets[7].seeds, 5);
+    }
+}
