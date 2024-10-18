@@ -20,7 +20,7 @@ fn read_input() -> Option<char> {
 fn main() {
     let mut game = board::new_game();
 
-    while !game.board.is_game_over() {
+    while game.board.is_game_over() == None {
         println!("Player {:#?}", game.player);
         game.board.print();
         match read_input() {
@@ -31,4 +31,15 @@ fn main() {
         }
     }
     game.board.print();
+    match game.board.is_game_over() {
+        None => return,
+        Some((player, score)) => {
+            if score == 24 {
+                // Tie!
+                println!("Tie!");
+                return;
+            }
+            println!("Winner is {:#?} with a score of {}.", player, score);
+        }
+    }
 }

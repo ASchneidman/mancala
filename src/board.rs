@@ -92,22 +92,42 @@ impl Board {
         return Some(index);
     }
 
-    pub fn is_game_over(&self) -> bool {
-        // Game is over if all of either players' pockets are 
+    pub fn is_game_over(&self) -> Option<(Player, usize)> {
+        // Game is over if all of either players' pockets are empty
+        // If so, returns the winning player and score
+
+        fn get_final_score(board: &Board) -> (Player, usize) {
+            let mut first_score = board.pockets[7].seeds;
+            let mut second_score = board.pockets[0].seeds;
+            for i in 1..7 { 
+                first_score += board.pockets[i].seeds;
+            }
+            for i in 8..14 { 
+                second_score += board.pockets[i].seeds;
+            }
+            if first_score >= second_score {
+                return (Player::First, first_score);
+            }
+            return (Player::Second, second_score);
+        }
+
         let mut game_not_over: bool = false;
         for pocket_index in 1..7 {
             // If we see any non-empty pocket, game for this player isn't over
             game_not_over |= self.pockets[pocket_index].seeds != 0;
         }
         if !game_not_over {
-            return true;
+            return Some(get_final_score(&self));
         }
         game_not_over = false;
         for pocket_index in 8..14 {
             // If we see any non-empty pocket, game for this player isn't over
             game_not_over |= self.pockets[pocket_index].seeds != 0;
         }
-        return !game_not_over;
+        if !game_not_over {
+            return Some(get_final_score(&self));
+        }
+        return None;
     }
 }
 
@@ -212,11 +232,11 @@ mod tests {
     #[test]
     fn test_game_over() {
         let mut game = new_game();
-        assert!(!game.board.is_game_over());
+        assert_eq!(game.board.is_game_over(), None);
         for i in 1..7 {
             game.board.pockets[i].seeds = 0;
         }
-        assert!(game.board.is_game_over());
+        assert_eq!(game.board.is_game_over(), Some((Player::Second, 4 * 6)));
     }
 
     #[test]
