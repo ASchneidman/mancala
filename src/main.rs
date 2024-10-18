@@ -2,23 +2,19 @@ use std::io::stdin;
 
 mod board;
 
-fn read_input(game: &mut board::GameState) -> bool {
+fn read_input() -> Option<char> {
     let mut input: String = String::new();
     match stdin().read_line(&mut input).ok() {
-        None => return false,
+        None => return None,
         Some(_) => {
             match input.chars().next() {
-                None => return false,
+                None => return None,
                 Some(pos) => {
-                    if !game.valid_move(pos) {
-                        return false;
-                    }
-                    game.board.play(pos);
+                    return Some(pos);
                 }
             }
         }
     }
-    return true;
 }
 
 fn main() {
@@ -27,8 +23,11 @@ fn main() {
     while !game.board.is_game_over() {
         println!("Player {:#?}", game.player);
         game.board.print();
-        if read_input(&mut game) {
-            game.player = if game.player == board::Player::First { board::Player::Second } else { board::Player::First };
+        match read_input() {
+            None => continue,
+            Some(pos) => {
+                game.play(pos);
+            }
         }
     }
     game.board.print();

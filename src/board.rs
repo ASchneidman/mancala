@@ -46,7 +46,9 @@ impl Board {
         println!("    A  B  C  D  E  F")
     }
 
-    pub fn play(&mut self, position: char) -> bool {
+    pub fn play(&mut self, position: char) -> Option<usize> {
+        // Moves the seeds at position around the board according to the player's turn.
+        // Returns the position landed on, if valid
         let mut index;
         if (position as usize >= 'A' as usize) && (position as usize <= 'F' as usize) {
             index = 1 + (position as usize - 'A' as usize);
@@ -56,7 +58,7 @@ impl Board {
 
         let player = self.pockets[index].player.clone();
         if self.pockets[index].seeds == 0 {
-            return false;
+            return None;
         }
         let seeds = self.pockets[index].seeds;
         self.pockets[index].seeds = 0;
@@ -72,7 +74,7 @@ impl Board {
             seeds_given_out += 1;
         }
 
-        return true;
+        return Some(index);
     }
 
     pub fn is_game_over(&self) -> bool {
@@ -145,5 +147,24 @@ impl GameState {
             return (position as usize >= 'A' as usize) && (position as usize <= 'F' as usize);
         }
         return (position as usize >= 'a' as usize) && (position as usize <= 'f' as usize);
+    }
+
+    pub fn play(&mut self, position: char) {
+        if !self.valid_move(position) {
+            return;
+        }
+
+        // If we land on a store, stays the same player
+        match self.board.play(position) {
+            None => return,
+            Some(final_pos) => {
+                if self.board.pockets[final_pos].name == "Store" {
+                    // Player gets another turn
+                    return;
+                }
+                // Next player's turn
+                self.player = if self.player == Player::First { Player::Second } else { Player::First };
+            }
+        }
     }
 }
