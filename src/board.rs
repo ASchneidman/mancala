@@ -74,6 +74,21 @@ impl Board {
             seeds_given_out += 1;
         }
 
+        // If we land on our own previously-empty pocket, we capture the enemy adjacent pocket and all go to my store.
+        if self.pockets[index].name != "Store" 
+            && self.pockets[index].player == player 
+            && self.pockets[index].seeds == 1 {
+            // Maybe capture! Check if enemy has populated pocket
+            let enemy_index = self.pockets.len() - index;
+            if self.pockets[enemy_index].seeds != 0 {
+                // Capture!
+                println!("Capture!");
+                self.pockets[if index < 7 { 7 } else { 0 }].seeds += 1 + self.pockets[enemy_index].seeds;
+                self.pockets[enemy_index].seeds = 0;
+                self.pockets[index].seeds = 0;
+            }
+        }
+
         return Some(index);
     }
 
@@ -228,4 +243,43 @@ mod tests {
         assert_eq!(game.board.pockets[8].seeds, 0);
         assert_eq!(game.board.pockets[7].seeds, 5);
     }
+
+    #[test]
+    fn test_capture_second_enemy_pocket() {
+        let mut game = new_game();
+        game.play('B');
+        game.board.pockets[13].seeds = 0;
+        game.play('b');
+        assert_eq!(game.player, Player::First);
+        assert_eq!(game.board.pockets[13].seeds, 0);
+        assert_eq!(game.board.pockets[0].seeds, 5);
+        assert_eq!(game.board.pockets[1].seeds, 0);
+    }
+
+    #[test]
+    fn test_big_move() {
+        let mut game = new_game();
+        game.board.pockets[0].seeds = 7;
+        game.board.pockets[1].seeds = 0;
+        game.board.pockets[2].seeds = 0;
+        game.board.pockets[3].seeds = 0;
+        game.board.pockets[4].seeds = 1;
+        game.board.pockets[5].seeds = 9;
+        game.board.pockets[6].seeds = 1;
+        game.board.pockets[7].seeds = 11;
+        game.board.pockets[8].seeds = 1;
+        game.board.pockets[9].seeds = 1;
+        game.board.pockets[10].seeds = 0;
+        game.board.pockets[11].seeds = 0;
+        game.board.pockets[12].seeds = 10;
+        game.board.pockets[13].seeds = 7;
+
+        // Triggers a capture
+        game.play('E');
+
+        assert_eq!(game.board.pockets[7].seeds, 21);
+        assert_eq!(game.board.pockets[1].seeds, 0);
+        assert_eq!(game.board.pockets[13].seeds, 0);
+    }
+
 }
