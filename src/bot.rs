@@ -1,14 +1,14 @@
 use crate::board;
 use rand::Rng;
 
-trait Bot {
-    fn react(board: &board::GameState) -> char;
+pub trait Bot {
+    fn react(&self, board: &board::GameState) -> char;
 }
 
-struct RandomBot {}
+pub struct RandomBot {}
 
 impl Bot for RandomBot {
-    fn react(board: &board::GameState) -> char {
+    fn react(&self, board: &board::GameState) -> char {
         let _ = board; // Random bot doesn't check board
         let pos = rand::thread_rng().gen_range(0..6);
         if board.player == board::Player::First {
@@ -25,14 +25,15 @@ mod tests {
     #[test]
     fn test_random_bot() {
         let mut game = board::new_game();
-        let reaction = RandomBot::react(&game);
+        let random_bot = RandomBot {};
+        let reaction = random_bot.react(&game);
 
         for _ in 0..100 {
             assert!(reaction as usize >= 'A' as usize && reaction as usize <= 'F' as usize);
         }
 
         game.player = board::Player::Second;
-        let reaction = RandomBot::react(&game);
+        let reaction = random_bot.react(&game);
         for _ in 0..100 {
             assert!(reaction as usize >= 'a' as usize && reaction as usize <= 'f' as usize);
         }
