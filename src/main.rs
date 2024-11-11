@@ -1,7 +1,5 @@
 use std::io::stdin;
 
-use bot::Bot;
-
 mod board;
 mod bot;
 
@@ -20,7 +18,7 @@ fn read_input() -> Option<char> {
     }
 }
 
-fn select_player_type(player: board::Player) -> Option<impl bot::Bot> {
+fn select_player_type(player: board::Player) -> Option<Box<dyn bot::Bot>> {
     println!("Select player type for player {:#?}. Hit <Enter> for a real player. Enter the name of the bot + <Enter> for a bot.", player);
     loop {
         let mut input = String::new();
@@ -33,7 +31,10 @@ fn select_player_type(player: board::Player) -> Option<impl bot::Bot> {
                     return None;
                 }
                 if input == "RandomBot\n" {
-                    return Some(bot::RandomBot {});
+                    return Some(Box::new(bot::RandomBot {}));
+                }
+                if input == "CaptureBot\n" {
+                    return Some(Box::new(bot::CaptureBot {}));
                 }
             }
         }

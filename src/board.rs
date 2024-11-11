@@ -46,6 +46,14 @@ impl Board {
         println!("    A  B  C  D  E  F")
     }
 
+    pub fn index_to_char(index: usize) -> char {
+        let ind: u32 = index.try_into().unwrap();
+        if index >= 1 && index <= 6 {
+            return unsafe { char::from_u32_unchecked(('A' as u32) + ind - 1) };
+        }
+        return unsafe { char::from_u32_unchecked(('a' as u32) + ind - 1) };
+    }
+
     pub fn play(&mut self, position: char) -> Option<usize> {
         // Moves the seeds at position around the board according to the player's turn.
         // Returns the position landed on, if valid
