@@ -1,6 +1,7 @@
 use std::io::stdin;
 
 mod board;
+mod bot;
 
 fn read_input() -> Option<char> {
     let mut input: String = String::new();
